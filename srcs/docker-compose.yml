@@ -1,0 +1,150 @@
+# [EN] The project name produces predictable resource names and an explicit network name.
+# [PL] Nazwa projektu zapewnia przewidywalne nazwy zasobów i jawną nazwę sieci.
+name: inception
+
+services:
+  mariadb:
+    # [EN] The service builds its own image from Debian; no ready-made MariaDB image is pulled.
+    # [PL] Usługa buduje własny obraz z Debiana; gotowy obraz MariaDB nie jest pobierany.
+    build:
+      context: ./requirements/mariadb
+      dockerfile: Dockerfile
+    image: mariadb
+    container_name: mariadb
+    restart: unless-stopped
+    env_file:
+      - .env
+    secrets:
+      - db_root_password
+      - db_password
+    volumes:
+      - type: volume
+        source: mariadb_data
+        target: /var/lib/mysql
+        volume:
+          nocopy: true
+    networks:
+      - inception
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/mariadb-healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 30s
+
+  wordpress:
+    # [EN] This image contains WordPress and PHP-FPM only; it does not install NGINX.
+    # [PL] Ten obraz zawiera wyłącznie WordPress i PHP-FPM; nie instaluje NGINX-a.
+    build:
+      context: ./requirements/wordpress
+      dockerfile: Dockerfile
+    image: wordpress
+    container_name: wordpress
+    restart: unless-stopped
+    env_file:
+      - .env
+    secrets:
+      - db_password
+      - wp_admin_password
+      - wp_user_password
+    volumes:
+      - type: volume
+        source: wordpress_data
+        target: /var/www/html
+        volume:
+          nocopy: true
+    networks:
+      - inception
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/wordpress-healthcheck.sh"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 30s
+
+  nginx:
+    # [EN] NGINX is the only public entry point and the only service publishing a host port.
+    # [PL] NGINX jest jedynym publicznym wejściem i jedyną usługą publikującą port hosta.
+    build:
+      context: ./requirements/nginx
+      dockerfile: Dockerfile
+    image: nginx
+    container_name: nginx
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "443:443"
+    volumes:
+      # [EN] NGINX needs WordPress files for static content, but it never writes to them.
+      # [PL] NGINX potrzebuje plików WordPressa dla treści statycznych, ale nigdy ich nie zapisuje.
+      - type: volume
+        source: wordpress_data
+        target: /var/www/html
+        read_only: true
+        volume:
+          nocopy: true
+    networks:
+      - inception
+    depends_on:
+      wordpress:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl --fail --silent --show-error --insecure --resolve $${DOMAIN_NAME}:443:127.0.0.1 https://$${DOMAIN_NAME}/healthz >/dev/null",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 10s
+
+# [EN] A user-defined bridge network provides isolation and service-name DNS.
+# [PL] Własna sieć bridge zapewnia izolację i DNS oparty na nazwach usług.
+networks:
+  inception:
+    name: inception
+    driver: bridge
+
+# [EN] These are Docker named volumes. The local driver places their data in the required host paths.
+# [PL] To są nazwane wolumeny Dockera. Sterownik local umieszcza dane w wymaganych ścieżkach hosta.
+volumes:
+  mariadb_data:
+    name: mariadb_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${LOGIN}/data/mariadb
+  wordpress_data:
+    name: wordpress_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/${LOGIN}/data/wordpress
+
+# [EN] Compose mounts each secret as a read-only file under /run/secrets in authorized services.
+# [PL] Compose montuje każdy sekret jako plik tylko do odczytu w /run/secrets uprawnionych usług.
+secrets:
+  db_root_password:
+    file: ../secrets/db_root_password.txt
+  db_password:
+    file: ../secrets/db_password.txt
+  wp_admin_password:
+    file: ../secrets/wp_admin_password.txt
+  wp_user_password:
+    file: ../secrets/wp_user_password.txt

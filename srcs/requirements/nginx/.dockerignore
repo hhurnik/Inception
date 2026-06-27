@@ -1,0 +1,6 @@
+# [EN] Send only files required to build this service.
+# [PL] Wysyłaj do build contextu tylko pliki wymagane do zbudowania tej usługi.
+.git
+*.md
+*.log
+*~

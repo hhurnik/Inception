@@ -1,0 +1,28 @@
+# [EN] This late-sorting file overrides Debian defaults relevant to the container.
+# [PL] Ten późno sortowany plik nadpisuje ustawienia Debiana istotne dla kontenera.
+[mariadbd]
+user = mysql
+pid-file = /run/mysqld/mysqld.pid
+socket = /run/mysqld/mysqld.sock
+datadir = /var/lib/mysql
+port = 3306
+bind-address = 0.0.0.0
+
+# [EN] Docker DNS uses IP addresses internally, so reverse DNS lookups are unnecessary.
+# [PL] Docker DNS używa wewnętrznie adresów IP, więc odwrotne zapytania DNS są zbędne.
+skip-name-resolve
+
+# [EN] Use modern Unicode defaults suitable for WordPress.
+# [PL] Używaj nowoczesnych ustawień Unicode odpowiednich dla WordPressa.
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+
+# [EN] Write operational logs to the container stream collected by Docker.
+# [PL] Zapisuj logi operacyjne do strumienia kontenera zbieranego przez Dockera.
+log-error = /dev/stderr
+
+# [EN] Keep durable InnoDB data in separate files within the persistent volume.
+# [PL] Przechowuj trwałe dane InnoDB w oddzielnych plikach wewnątrz trwałego wolumenu.
+default-storage-engine = InnoDB
+innodb-file-per-table = 1
+max-connections = 100
