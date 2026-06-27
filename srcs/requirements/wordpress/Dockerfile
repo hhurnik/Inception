@@ -39,7 +39,8 @@ RUN set -eux; \
     curl --proto '=https' --tlsv1.2 --fail --location --retry 3 \
         -o "wp-cli-${WP_CLI_VERSION}.phar.sha512" \
         "https://github.com/wp-cli/wp-cli/releases/download/v${WP_CLI_VERSION}/wp-cli-${WP_CLI_VERSION}.phar.sha512"; \
-    sha512sum -c "wp-cli-${WP_CLI_VERSION}.phar.sha512"; \
+    CHECKSUM="$(cat "wp-cli-${WP_CLI_VERSION}.phar.sha512")"; \
+    printf '%s  %s\n' "${CHECKSUM}" "wp-cli-${WP_CLI_VERSION}.phar" | sha512sum -c -; \
     install -m 0755 "wp-cli-${WP_CLI_VERSION}.phar" /usr/local/bin/wp; \
     rm -f "wp-cli-${WP_CLI_VERSION}.phar" "wp-cli-${WP_CLI_VERSION}.phar.sha512"; \
     wp --allow-root --info

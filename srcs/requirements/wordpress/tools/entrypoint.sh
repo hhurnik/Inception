@@ -64,6 +64,8 @@ case "$WP_USER_ROLE" in subscriber|contributor|author|editor) : ;; *) fail "unsa
 
 # Validate secret files without exporting their values into the PHP-FPM environment.
 DB_PASSWORD=$(read_hex_secret "$DB_SECRET")
+RUNTIME_DB_SECRET=/run/wordpress-db-password
+install -o www-data -g www-data -m 0400 "$DB_SECRET" "$RUNTIME_DB_SECRET"
 read_hex_secret "$ADMIN_SECRET" >/dev/null
 read_hex_secret "$USER_SECRET" >/dev/null
 
@@ -100,7 +102,7 @@ wp config set DB_NAME "$MYSQL_DATABASE" --allow-root --path="$WP_PATH"
 wp config set DB_USER "$MYSQL_USER" --allow-root --path="$WP_PATH"
 wp config set DB_HOST 'mariadb:3306' --allow-root --path="$WP_PATH"
 wp config set DB_CHARSET 'utf8mb4' --allow-root --path="$WP_PATH"
-wp config set DB_PASSWORD "trim(file_get_contents('/run/secrets/db_password'))" --raw --allow-root --path="$WP_PATH"
+wp config set DB_PASSWORD "trim(file_get_contents('/run/wordpress-db-password'))" --raw --allow-root --path="$WP_PATH"
 wp config set WP_HOME "https://$DOMAIN_NAME" --allow-root --path="$WP_PATH"
 wp config set WP_SITEURL "https://$DOMAIN_NAME" --allow-root --path="$WP_PATH"
 wp config set FORCE_SSL_ADMIN true --raw --allow-root --path="$WP_PATH"
@@ -147,7 +149,7 @@ if ! wp core is-installed --allow-root --path="$WP_PATH" >/dev/null 2>&1; then
         --admin_user="$WP_ADMIN_USER" \
         --admin_email="$WP_ADMIN_EMAIL" \
         --skip-email \
-        --prompt=admin_password < "$ADMIN_SECRET"
+        --prompt=admin_password < "$ADMIN_SECRET" >/dev/null 2>&1
 fi
 
 # Create exactly the required second user if it does not already exist.
@@ -156,7 +158,7 @@ if ! wp user exists "$WP_USER" --allow-root --path="$WP_PATH" >/dev/null 2>&1; t
         --allow-root \
         --path="$WP_PATH" \
         --role="$WP_USER_ROLE" \
-        --prompt=user_pass < "$USER_SECRET"
+        --prompt=user_pass < "$USER_SECRET" >/dev/null 2>&1
 else
     wp user update "$WP_USER" --allow-root --path="$WP_PATH" --role="$WP_USER_ROLE" >/dev/null
 fi
