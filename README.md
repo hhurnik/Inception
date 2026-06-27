@@ -193,4 +193,4 @@ See `USER_DOC.md` for operator instructions and `DEV_DOC.md` for setup, architec
 
 ### Use of AI
 
-AI was used to help structure the project, explain Docker and system-administration concepts, draft configuration and documentation, identify security-sensitive areas, and propose validation commands. The generated material must be reviewed, executed, debugged, and understood by the project author. AI does not replace testing on the required virtual machine or the author's ability to explain every design choice during evaluation.
+AI was used to help structure the project, explain Docker and system-administration concepts, draft configuration and documentation, identify security-sensitive areas, and propose validation commands.
