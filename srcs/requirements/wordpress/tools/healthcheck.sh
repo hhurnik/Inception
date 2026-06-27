@@ -1,8 +1,7 @@
 #!/bin/sh
 set -eu
 
-# [EN] Query PHP-FPM's built-in ping endpoint over FastCGI.
-# [PL] Odpytaj wbudowany endpoint ping PHP-FPM przez FastCGI.
+# Query PHP-FPM's built-in ping endpoint over FastCGI.
 response=$(
     SCRIPT_NAME=/ping \
     SCRIPT_FILENAME=/ping \

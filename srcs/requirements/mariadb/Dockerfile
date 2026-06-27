@@ -1,9 +1,7 @@
-# [EN] Debian 12 is the penultimate stable Debian release at project preparation time.
-# [PL] Debian 12 jest przedostatnim stabilnym wydaniem Debiana w czasie przygotowania projektu.
+# Debian 12 is the penultimate stable Debian release at project preparation time.
 FROM debian:12.14-slim
 
-# [EN] Install MariaDB from Debian repositories instead of using a ready-made application image.
-# [PL] Instaluj MariaDB z repozytoriów Debiana zamiast używać gotowego obrazu aplikacji.
+# Install MariaDB from Debian repositories instead of using a ready-made application image.
 RUN set -eux; \
     printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d; \
     chmod +x /usr/sbin/policy-rc.d; \

@@ -1,8 +1,7 @@
 #!/bin/sh
 set -eu
 
-# [EN] Static validation works even before Docker is installed.
-# [PL] Walidacja statyczna działa nawet przed instalacją Dockera.
+# Static validation works even before Docker is installed.
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 ROOT_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/../../.." && pwd)
 ERRORS=0
@@ -39,8 +38,7 @@ for relative in $required_files; do
     fi
 done
 
-# [EN] Shell syntax is checked without executing any service script.
-# [PL] Składnia shella jest sprawdzana bez uruchamiania skryptów usług.
+# Shell syntax is checked without executing any service script.
 for script in \
     "$ROOT_DIR"/srcs/requirements/*/tools/*.sh \
     "$ROOT_DIR"/srcs/requirements/tools/*.sh; do
@@ -52,16 +50,14 @@ for script in \
     fi
 done
 
-# [EN] No Dockerfile may use the prohibited latest tag.
-# [PL] Żaden Dockerfile nie może używać zabronionego tagu latest.
+# No Dockerfile may use the prohibited latest tag.
 if grep -RniE '^[[:space:]]*FROM[[:space:]]+[^#[:space:]]*:latest([[:space:]]|$)' "$ROOT_DIR/srcs/requirements" --include='Dockerfile'; then
     fail "a Dockerfile uses :latest"
 else
     pass "no Dockerfile uses :latest"
 fi
 
-# [EN] Check specifically the executable entrypoints for forbidden keepalive hacks.
-# [PL] Sprawdź dokładnie wykonywalne entrypointy pod kątem zabronionych sztuczek podtrzymujących.
+# Check specifically the executable entrypoints for forbidden keepalive hacks.
 entrypoints=$(find "$ROOT_DIR/srcs/requirements" -path '*/tools/entrypoint.sh' -type f)
 if grep -nE '(^|[;&|[:space:]])(tail[[:space:]]+-f|sleep[[:space:]]+infinity|while[[:space:]]+true)' $entrypoints; then
     fail "a prohibited keepalive command appears in an entrypoint"
@@ -75,15 +71,13 @@ else
     pass "no host networking or links"
 fi
 
-# [EN] Verify that only NGINX has a ports section in the intended Compose file.
-# [PL] Sprawdź, że wyłącznie NGINX ma sekcję ports w zamierzonej konfiguracji Compose.
+# Verify that only NGINX has a ports section in the intended Compose file.
 ports_count=$(grep -c '^[[:space:]]*ports:' "$ROOT_DIR/srcs/docker-compose.yml" || true)
 [ "$ports_count" -eq 1 ] && pass "exactly one ports section" || fail "expected exactly one ports section"
 
 grep -q '"443:443"' "$ROOT_DIR/srcs/docker-compose.yml" && pass "host port 443 is published" || fail "443:443 mapping is missing"
 
-# [EN] Validate local configuration when setup has already created it.
-# [PL] Sprawdź lokalną konfigurację, jeśli setup już ją utworzył.
+# Validate local configuration when setup has already created it.
 if [ -f "$ROOT_DIR/srcs/.env" ]; then
     # shellcheck disable=SC1090
     . "$ROOT_DIR/srcs/.env"
@@ -97,8 +91,7 @@ else
     printf '[SKIP] srcs/.env does not exist; run make setup\n'
 fi
 
-# [EN] Git must not track the real environment file or secret values.
-# [PL] Git nie może śledzić prawdziwego pliku środowiskowego ani wartości sekretów.
+# Git must not track the real environment file or secret values.
 if command -v git >/dev/null 2>&1 && git -C "$ROOT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
     tracked=$(git -C "$ROOT_DIR" ls-files 'srcs/.env' 'secrets/*.txt')
     if [ -n "$tracked" ]; then
@@ -109,8 +102,7 @@ if command -v git >/dev/null 2>&1 && git -C "$ROOT_DIR" rev-parse --is-inside-wo
     fi
 fi
 
-# [EN] Compose performs the authoritative schema/interpolation check when available.
-# [PL] Compose wykonuje autorytatywne sprawdzenie schematu i interpolacji, kiedy jest dostępny.
+# Compose performs the authoritative schema/interpolation check when available.
 if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1 && [ -f "$ROOT_DIR/srcs/.env" ]; then
     if docker compose --env-file "$ROOT_DIR/srcs/.env" -f "$ROOT_DIR/srcs/docker-compose.yml" config --quiet; then
         pass "docker compose config"

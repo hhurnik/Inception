@@ -1,8 +1,7 @@
 #!/bin/sh
 set -eu
 
-# [EN] This is deliberately separate from normal cleanup because it permanently deletes data.
-# [PL] To jest celowo oddzielone od zwykłego czyszczenia, ponieważ trwale usuwa dane.
+# This is deliberately separate from normal cleanup because it permanently deletes data.
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 ROOT_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/../../.." && pwd)
 ENV_FILE="$ROOT_DIR/srcs/.env"

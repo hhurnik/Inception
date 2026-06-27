@@ -1,12 +1,10 @@
-# [EN] NGINX drops worker privileges to the standard Debian web user.
-# [PL] Workery NGINX-a obniżają uprawnienia do standardowego użytkownika webowego Debiana.
+# NGINX drops worker privileges to the standard Debian web user.
 user www-data;
 worker_processes auto;
 pid /run/nginx.pid;
 error_log /dev/stderr notice;
 
-# [EN] Keep the event configuration small and predictable for the project VM.
-# [PL] Zachowaj małą i przewidywalną konfigurację zdarzeń dla projektowej VM.
+# Keep the event configuration small and predictable for the project VM.
 events {
     worker_connections 1024;
 }
@@ -15,8 +13,7 @@ http {
     include /etc/nginx/mime.types;
     default_type application/octet-stream;
 
-    # [EN] Container logs go to stdout/stderr so docker logs can collect them.
-    # [PL] Logi kontenera trafiają do stdout/stderr, aby docker logs mógł je zebrać.
+    # Container logs go to stdout/stderr so docker logs can collect them.
     access_log /dev/stdout;
     error_log /dev/stderr notice;
 
@@ -27,8 +24,7 @@ http {
     client_max_body_size 64m;
 
     server {
-        # [EN] Port 80 is intentionally absent. HTTPS on 443 is the only entry point.
-        # [PL] Port 80 jest celowo nieobecny. HTTPS na 443 jest jedynym wejściem.
+        # Port 80 is intentionally absent. HTTPS on 443 is the only entry point.
         listen 443 ssl;
         server_name ${DOMAIN_NAME};
 
@@ -38,8 +34,7 @@ http {
         ssl_certificate /etc/nginx/tls/inception.crt;
         ssl_certificate_key /etc/nginx/tls/inception.key;
 
-        # [EN] The subject permits only TLS 1.2 and TLS 1.3.
-        # [PL] Subject zezwala wyłącznie na TLS 1.2 oraz TLS 1.3.
+        # The subject permits only TLS 1.2 and TLS 1.3.
         ssl_protocols TLSv1.2 TLSv1.3;
         ssl_ciphers 'ECDHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-RSA-AES128-GCM-SHA256';
         ssl_prefer_server_ciphers on;
@@ -47,40 +42,34 @@ http {
         ssl_session_timeout 10m;
         ssl_session_tickets off;
 
-        # [EN] Conservative security headers that do not break the WordPress editor.
-        # [PL] Ostrożne nagłówki bezpieczeństwa, które nie psują edytora WordPressa.
+        # Conservative security headers that do not break the WordPress editor.
         add_header X-Content-Type-Options nosniff always;
         add_header X-Frame-Options SAMEORIGIN always;
         add_header Referrer-Policy strict-origin-when-cross-origin always;
 
-        # [EN] Health endpoint is independent of PHP and used by the container healthcheck.
-        # [PL] Endpoint zdrowia nie zależy od PHP i jest używany przez healthcheck kontenera.
+        # Health endpoint is independent of PHP and used by the container healthcheck.
         location = /healthz {
             access_log off;
             default_type text/plain;
             return 200 'ok\n';
         }
 
-        # [EN] Serve real files directly and route all other requests through WordPress.
-        # [PL] Serwuj istniejące pliki bezpośrednio, a pozostałe żądania kieruj do WordPressa.
+        # Serve real files directly and route all other requests through WordPress.
         location / {
             try_files $uri $uri/ /index.php?$args;
         }
 
-        # [EN] Never allow the database configuration file to be downloaded or executed directly.
-        # [PL] Nigdy nie pozwalaj na pobranie ani bezpośrednie wykonanie pliku konfiguracji bazy.
+        # Never allow the database configuration file to be downloaded or executed directly.
         location = /wp-config.php {
             deny all;
         }
 
-        # [EN] Deny hidden files except the conventional ACME directory.
-        # [PL] Zabroń dostępu do ukrytych plików z wyjątkiem standardowego katalogu ACME.
+        # Deny hidden files except the conventional ACME directory.
         location ~ /\.(?!well-known/) {
             deny all;
         }
 
-        # [EN] PHP files are executed by PHP-FPM in the separate wordpress container.
-        # [PL] Pliki PHP są wykonywane przez PHP-FPM w oddzielnym kontenerze wordpress.
+        # PHP files are executed by PHP-FPM in the separate wordpress container.
         location ~ \.php$ {
             try_files $uri =404;
             include fastcgi_params;

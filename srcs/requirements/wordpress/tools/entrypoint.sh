@@ -62,24 +62,21 @@ case "$WP_ADMIN_EMAIL" in *'@'*'.'*) : ;; *) fail "invalid WP_ADMIN_EMAIL" ;; es
 case "$WP_USER_EMAIL" in *'@'*'.'*) : ;; *) fail "invalid WP_USER_EMAIL" ;; esac
 case "$WP_USER_ROLE" in subscriber|contributor|author|editor) : ;; *) fail "unsafe WP_USER_ROLE" ;; esac
 
-# [EN] Validate secret files without exporting their values into the PHP-FPM environment.
-# [PL] Sprawdź pliki sekretów bez eksportowania ich wartości do środowiska PHP-FPM.
+# Validate secret files without exporting their values into the PHP-FPM environment.
 DB_PASSWORD=$(read_hex_secret "$DB_SECRET")
 read_hex_secret "$ADMIN_SECRET" >/dev/null
 read_hex_secret "$USER_SECRET" >/dev/null
 
 mkdir -p /run/php "$WP_PATH"
 
-# [EN] Populate an empty persistent volume from the versioned core stored in the image.
-# [PL] Wypełnij pusty trwały wolumen wersjonowanym rdzeniem przechowywanym w obrazie.
+# Populate an empty persistent volume from the versioned core stored in the image.
 if [ ! -f "$WP_PATH/wp-includes/version.php" ]; then
     printf 'Copying WordPress core into the persistent volume...\n'
     cp -a "$WP_SOURCE/." "$WP_PATH/"
 fi
 chown -R www-data:www-data "$WP_PATH" /run/php
 
-# [EN] Generate wp-config.php without embedding the real database password.
-# [PL] Wygeneruj wp-config.php bez osadzania prawdziwego hasła bazy.
+# Generate wp-config.php without embedding the real database password.
 if [ ! -f "$WP_PATH/wp-config.php" ]; then
     wp config create \
         --allow-root \
@@ -92,15 +89,13 @@ if [ ! -f "$WP_PATH/wp-config.php" ]; then
         --skip-check \
         --skip-salts
 
-    # [EN] Generate salts locally so first startup does not depend on an external salt API.
-    # [PL] Generuj sole lokalnie, aby pierwszy start nie zależał od zewnętrznego API soli.
+    # Generate salts locally so first startup does not depend on an external salt API.
     for key in AUTH_KEY SECURE_AUTH_KEY LOGGED_IN_KEY NONCE_KEY AUTH_SALT SECURE_AUTH_SALT LOGGED_IN_SALT NONCE_SALT; do
         wp config set "$key" "$(openssl rand -base64 48)" --allow-root --path="$WP_PATH"
     done
 fi
 
-# [EN] Reconcile non-secret settings on every start and keep DB_PASSWORD as a runtime file expression.
-# [PL] Uzgadniaj jawne ustawienia przy każdym starcie i zachowaj DB_PASSWORD jako wyrażenie pliku runtime.
+# Reconcile non-secret settings on every start and keep DB_PASSWORD as a runtime file expression.
 wp config set DB_NAME "$MYSQL_DATABASE" --allow-root --path="$WP_PATH"
 wp config set DB_USER "$MYSQL_USER" --allow-root --path="$WP_PATH"
 wp config set DB_HOST 'mariadb:3306' --allow-root --path="$WP_PATH"
@@ -115,8 +110,7 @@ wp config set WP_DEBUG false --raw --allow-root --path="$WP_PATH"
 chmod 0640 "$WP_PATH/wp-config.php"
 chown www-data:www-data "$WP_PATH/wp-config.php"
 
-# [EN] Use a temporary MariaDB option file so the password does not appear in process arguments.
-# [PL] Użyj tymczasowego pliku opcji MariaDB, aby hasło nie pojawiło się w argumentach procesu.
+# Use a temporary MariaDB option file so the password does not appear in process arguments.
 client_config=$(mktemp)
 cleanup_client_config() { rm -f "$client_config"; }
 trap cleanup_client_config EXIT HUP INT TERM
@@ -143,8 +137,7 @@ done
 cleanup_client_config
 trap - EXIT HUP INT TERM
 
-# [EN] The WordPress installation is idempotent because WP-CLI checks database tables first.
-# [PL] Instalacja WordPressa jest idempotentna, ponieważ WP-CLI najpierw sprawdza tabele bazy.
+# The WordPress installation is idempotent because WP-CLI checks database tables first.
 if ! wp core is-installed --allow-root --path="$WP_PATH" >/dev/null 2>&1; then
     wp core install \
         --allow-root \
@@ -157,8 +150,7 @@ if ! wp core is-installed --allow-root --path="$WP_PATH" >/dev/null 2>&1; then
         --prompt=admin_password < "$ADMIN_SECRET"
 fi
 
-# [EN] Create exactly the required second user if it does not already exist.
-# [PL] Utwórz wymaganego drugiego użytkownika, jeśli jeszcze nie istnieje.
+# Create exactly the required second user if it does not already exist.
 if ! wp user exists "$WP_USER" --allow-root --path="$WP_PATH" >/dev/null 2>&1; then
     wp user create "$WP_USER" "$WP_USER_EMAIL" \
         --allow-root \
@@ -171,6 +163,5 @@ fi
 
 chown -R www-data:www-data "$WP_PATH"
 
-# [EN] Replace the shell with foreground PHP-FPM so it receives container signals directly.
-# [PL] Zastąp shell pierwszoplanowym PHP-FPM, aby bezpośrednio otrzymywał sygnały kontenera.
+# Replace the shell with foreground PHP-FPM so it receives container signals directly.
 exec "$@"

@@ -1,8 +1,7 @@
 #!/bin/sh
 set -eu
 
-# [EN] This script tests the running stack from the host VM.
-# [PL] Ten skrypt testuje uruchomiony stack z poziomu hosta VM.
+# This script tests the running stack from the host VM.
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 ROOT_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/../../.." && pwd)
 ENV_FILE="$ROOT_DIR/srcs/.env"
@@ -30,8 +29,7 @@ for service in mariadb wordpress nginx; do
     [ "$health" = healthy ] && ok "$service is healthy" || bad "$service health is $health"
 done
 
-# [EN] Only NGINX may publish a host port.
-# [PL] Tylko NGINX może publikować port hosta.
+# Only NGINX may publish a host port.
 for service in mariadb wordpress; do
     published=$(docker port "$service" 2>/dev/null || true)
     [ -z "$published" ] && ok "$service publishes no host port" || bad "$service unexpectedly publishes: $published"
@@ -39,8 +37,7 @@ done
 nginx_port=$(docker port nginx 443/tcp 2>/dev/null || true)
 printf '%s' "$nginx_port" | grep -q ':443$' && ok "NGINX publishes 443" || bad "NGINX 443 mapping is missing"
 
-# [EN] Resolve the local domain explicitly so the test is independent of DNS caching.
-# [PL] Rozwiąż lokalną domenę jawnie, aby test nie zależał od cache DNS.
+# Resolve the local domain explicitly so the test is independent of DNS caching.
 if curl --fail --silent --show-error --insecure --resolve "$DOMAIN_NAME:443:127.0.0.1" "https://$DOMAIN_NAME/healthz" | grep -qx 'ok'; then
     ok "HTTPS health endpoint"
 else

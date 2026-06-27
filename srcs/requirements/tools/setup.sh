@@ -1,8 +1,7 @@
 #!/bin/sh
 set -eu
 
-# [EN] Resolve the repository root independently of the current working directory.
-# [PL] Ustal katalog główny repozytorium niezależnie od bieżącego katalogu roboczego.
+# Resolve the repository root independently of the current working directory.
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 ROOT_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/../../.." && pwd)
 ENV_FILE="$ROOT_DIR/srcs/.env"
@@ -34,8 +33,7 @@ contains_admin() {
     esac
 }
 
-# [EN] Create a local .env only once. Existing configuration is never overwritten silently.
-# [PL] Utwórz lokalny .env tylko raz. Istniejąca konfiguracja nigdy nie jest po cichu nadpisywana.
+# Create a local .env only once. Existing configuration is never overwritten silently.
 if [ ! -f "$ENV_FILE" ]; then
     default_login=${USER:-$(id -un)}
     printf '42 login [%s]: ' "$default_login"
@@ -89,8 +87,7 @@ command -v openssl >/dev/null 2>&1 || fail "openssl is required to generate secr
 mkdir -p "$SECRETS_DIR"
 chmod 700 "$SECRETS_DIR"
 
-# [EN] Generate strong hexadecimal secrets without printing them to terminal output.
-# [PL] Generuj silne sekrety szesnastkowe bez wypisywania ich w terminalu.
+# Generate strong hexadecimal secrets without printing them to terminal output.
 generate_secret() {
     target=$1
     if [ ! -s "$target" ]; then
@@ -106,8 +103,7 @@ generate_secret "$SECRETS_DIR/db_password.txt"
 generate_secret "$SECRETS_DIR/wp_admin_password.txt"
 generate_secret "$SECRETS_DIR/wp_user_password.txt"
 
-# [EN] Create the exact host locations required by the subject.
-# [PL] Utwórz dokładne lokalizacje hosta wymagane przez subject.
+# Create the exact host locations required by the subject.
 DATA_ROOT="/home/$LOGIN/data"
 if [ "$(id -u)" -eq 0 ]; then
     mkdir -p "$DATA_ROOT/mariadb" "$DATA_ROOT/wordpress"
@@ -116,8 +112,7 @@ else
     sudo mkdir -p "$DATA_ROOT/mariadb" "$DATA_ROOT/wordpress"
 fi
 
-# [EN] Ensure the domain resolves locally inside the VM. This operation is idempotent.
-# [PL] Zapewnij lokalne rozwiązywanie domeny wewnątrz VM. Operacja jest idempotentna.
+# Ensure the domain resolves locally inside the VM. This operation is idempotent.
 if ! awk -v domain="$DOMAIN_NAME" '
     $1 == "127.0.0.1" {
         for (field = 2; field <= NF; field++) {
@@ -137,8 +132,7 @@ if ! awk -v domain="$DOMAIN_NAME" '
     printf 'Added %s to /etc/hosts\n' "$DOMAIN_NAME"
 fi
 
-# [EN] Make the mandatory first README line contain the real learner login.
-# [PL] Ustaw prawdziwy login ucznia w obowiązkowej pierwszej linii README.
+# Make the mandatory first README line contain the real learner login.
 if [ -f "$README_FILE" ]; then
     temporary=$(mktemp)
     {

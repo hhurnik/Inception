@@ -1,8 +1,7 @@
 #!/bin/sh
 set -eu
 
-# [EN] A temporary option file prevents the database password from appearing in process arguments.
-# [PL] Tymczasowy plik opcji zapobiega pojawieniu się hasła bazy w argumentach procesu.
+# A temporary option file prevents the database password from appearing in process arguments.
 : "${MYSQL_USER:?MYSQL_USER is required}"
 SECRET=/run/secrets/db_password
 [ -r "$SECRET" ] || exit 1

@@ -1,12 +1,10 @@
-# [EN] Debian 12 is the penultimate stable Debian release at project preparation time.
-# [PL] Debian 12 jest przedostatnim stabilnym wydaniem Debiana w czasie przygotowania projektu.
+# Debian 12 is the penultimate stable Debian release at project preparation time.
 FROM debian:12.14-slim
 
 ARG WP_CLI_VERSION=2.12.0
 ARG WORDPRESS_VERSION=7.0
 
-# [EN] Install PHP-FPM and only the runtime modules needed by a typical WordPress installation.
-# [PL] Instaluj PHP-FPM i wyłącznie moduły wykonawcze potrzebne typowej instalacji WordPressa.
+# Install PHP-FPM and only the runtime modules needed by a typical WordPress installation.
 RUN set -eux; \
     printf '#!/bin/sh\nexit 101\n' > /usr/sbin/policy-rc.d; \
     chmod +x /usr/sbin/policy-rc.d; \
@@ -32,8 +30,7 @@ RUN set -eux; \
     rm -rf /var/lib/apt/lists/*; \
     mkdir -p /run/php /usr/src/wordpress /var/www/html
 
-# [EN] Download a pinned WP-CLI release and verify its published SHA-512 checksum.
-# [PL] Pobierz przypięte wydanie WP-CLI i sprawdź opublikowaną sumę SHA-512.
+# Download a pinned WP-CLI release and verify its published SHA-512 checksum.
 RUN set -eux; \
     cd /tmp; \
     curl --proto '=https' --tlsv1.2 --fail --location --retry 3 \
@@ -47,8 +44,7 @@ RUN set -eux; \
     rm -f "wp-cli-${WP_CLI_VERSION}.phar" "wp-cli-${WP_CLI_VERSION}.phar.sha512"; \
     wp --allow-root --info
 
-# [EN] WordPress core is downloaded and checksum-verified at image build time.
-# [PL] Rdzeń WordPressa jest pobierany i sprawdzany sumami kontrolnymi podczas budowania obrazu.
+# WordPress core is downloaded and checksum-verified at image build time.
 RUN set -eux; \
     wp core download \
         --allow-root \

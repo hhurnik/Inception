@@ -1,8 +1,7 @@
 #!/bin/sh
 set -eu
 
-# [EN] Fail early if the required non-secret domain is absent or malformed.
-# [PL] Zakończ wcześnie, jeśli wymagana niejawna domena jest nieobecna albo błędna.
+# Fail early if the required non-secret domain is absent or malformed.
 : "${DOMAIN_NAME:?DOMAIN_NAME is required}"
 case "$DOMAIN_NAME" in
     ''|*[!a-zA-Z0-9.-]*) printf 'Invalid DOMAIN_NAME.\n' >&2; exit 1 ;;
@@ -16,8 +15,7 @@ KEY="$TLS_DIR/inception.key"
 
 mkdir -p "$TLS_DIR" /run/nginx
 
-# [EN] Generate a private self-signed certificate only inside the running container.
-# [PL] Generuj prywatny certyfikat samopodpisany wyłącznie wewnątrz uruchomionego kontenera.
+# Generate a private self-signed certificate only inside the running container.
 if [ ! -s "$CERT" ] || [ ! -s "$KEY" ]; then
     openssl req \
         -x509 \
@@ -33,14 +31,11 @@ if [ ! -s "$CERT" ] || [ ! -s "$KEY" ]; then
     chmod 644 "$CERT"
 fi
 
-# [EN] Restrict envsubst to DOMAIN_NAME so NGINX variables such as $uri remain intact.
-# [PL] Ogranicz envsubst do DOMAIN_NAME, aby zmienne NGINX-a, takie jak $uri, pozostały nienaruszone.
+# Restrict envsubst to DOMAIN_NAME so NGINX variables such as $uri remain intact.
 envsubst '${DOMAIN_NAME}' < "$TEMPLATE" > "$CONFIG"
 
-# [EN] Refuse to start if the rendered NGINX configuration is invalid.
-# [PL] Odmów startu, jeśli wyrenderowana konfiguracja NGINX-a jest nieprawidłowa.
+# Refuse to start if the rendered NGINX configuration is invalid.
 nginx -t
 
-# [EN] exec makes NGINX the container's PID 1 and preserves correct signal handling.
-# [PL] exec czyni NGINX procesem PID 1 kontenera i zachowuje poprawną obsługę sygnałów.
+# exec makes NGINX the container's PID 1 and preserves correct signal handling.
 exec "$@"

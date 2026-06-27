@@ -1,21 +1,17 @@
-# [EN] The real environment file is local because it contains machine-specific values.
-# [PL] Prawdziwy plik środowiskowy jest lokalny, ponieważ zawiera wartości zależne od maszyny.
+#The real environment file is local because it contains machine-specific values.
 srcs/.env
 
 # [EN] Secret values must never enter Git.
-# [PL] Wartości sekretów nigdy nie mogą trafić do Gita.
 secrets/*.txt
 !secrets/.gitkeep
 !secrets/README.md
 
-# [EN] Locally generated certificates and keys are not repository content.
-# [PL] Lokalnie wygenerowane certyfikaty i klucze nie są zawartością repozytorium.
+#Locally generated certificates and keys are not repository content.
 *.key
 *.pem
 *.crt
 
-# [EN] Editor, operating-system, and temporary files.
-# [PL] Pliki edytora, systemu operacyjnego i pliki tymczasowe.
+#Editor, operating-system, and temporary files.
 .vscode/
 .idea/
 .DS_Store

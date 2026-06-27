@@ -12,16 +12,14 @@ fail() {
     exit 1
 }
 
-# [EN] Database identifiers are validated before being inserted into SQL statements.
-# [PL] Identyfikatory bazy są sprawdzane przed wstawieniem do instrukcji SQL.
+# Database identifiers are validated before being inserted into SQL statements.
 validate_identifier() {
     case "$1" in
         ''|*[!a-zA-Z0-9_]*) fail "invalid SQL identifier: $1" ;;
     esac
 }
 
-# [EN] Setup generates hexadecimal secrets, which avoid SQL quoting ambiguity.
-# [PL] Setup generuje sekrety szesnastkowe, które unikają niejednoznaczności cytowania SQL.
+# Setup generates hexadecimal secrets, which avoid SQL quoting ambiguity.
 read_hex_secret() {
     file=$1
     [ -r "$file" ] || fail "missing secret file: $file"
@@ -46,8 +44,7 @@ mkdir -p /run/mysqld "$DATADIR"
 chown -R mysql:mysql /run/mysqld "$DATADIR"
 chmod 0750 "$DATADIR"
 
-# [EN] Initialize exactly once. The mysql system directory is the persistence marker.
-# [PL] Inicjalizuj dokładnie raz. Katalog systemowy mysql jest znacznikiem trwałości.
+# Initialize exactly once. The mysql system directory is the persistence marker.
 if [ ! -d "$DATADIR/mysql" ]; then
     printf 'Initializing MariaDB data directory...\n'
     mariadb-install-db \
@@ -56,8 +53,7 @@ if [ ! -d "$DATADIR/mysql" ]; then
         --auth-root-authentication-method=normal \
         --skip-test-db >/dev/null
 
-    # [EN] The temporary server accepts local socket connections only during initialization.
-    # [PL] Tymczasowy serwer przyjmuje podczas inicjalizacji wyłącznie lokalne połączenia socket.
+    # The temporary server accepts local socket connections only during initialization.
     mariadbd \
         --user=mysql \
         --datadir="$DATADIR" \
@@ -85,8 +81,7 @@ if [ ! -d "$DATADIR/mysql" ]; then
     done
     [ "$ready" -eq 1 ] || fail "temporary MariaDB did not become ready"
 
-    # [EN] Passwords arrive through standard input, not Dockerfile, Compose, or command arguments.
-    # [PL] Hasła trafiają przez standardowe wejście, a nie Dockerfile, Compose ani argumenty polecenia.
+    # Passwords arrive through standard input, not Dockerfile, Compose, or command arguments.
     mariadb --protocol=socket --socket="$SOCKET" -uroot <<SQL
 ALTER USER 'root'@'localhost' IDENTIFIED BY '$ROOT_PASSWORD';
 DROP USER IF EXISTS 'root'@'127.0.0.1';
@@ -103,14 +98,12 @@ GRANT ALL PRIVILEGES ON \`$MYSQL_DATABASE\`.* TO '$MYSQL_USER'@'%';
 FLUSH PRIVILEGES;
 SQL
 
-    # [EN] Stop the temporary process cleanly before starting the final PID 1 server.
-    # [PL] Zatrzymaj czysto proces tymczasowy przed uruchomieniem docelowego serwera PID 1.
+    # Stop the temporary process cleanly before starting the final PID 1 server.
     kill -TERM "$temporary_pid"
     wait "$temporary_pid"
     trap - EXIT HUP INT TERM
     printf 'MariaDB initialization complete.\n'
 fi
 
-# [EN] Replace the shell with the real database server; no keepalive loop is required.
-# [PL] Zastąp shell prawdziwym serwerem bazy; żadna pętla podtrzymująca nie jest potrzebna.
+# Replace the shell with the real database server; no keepalive loop is required.
 exec "$@" --user=mysql --datadir="$DATADIR" --socket="$SOCKET" --pid-file="$PIDFILE"

@@ -1,11 +1,9 @@
-# [EN] The project name produces predictable resource names and an explicit network name.
-# [PL] Nazwa projektu zapewnia przewidywalne nazwy zasobów i jawną nazwę sieci.
+#The project name produces predictable resource names and an explicit network name.
 name: inception
 
 services:
   mariadb:
-    # [EN] The service builds its own image from Debian; no ready-made MariaDB image is pulled.
-    # [PL] Usługa buduje własny obraz z Debiana; gotowy obraz MariaDB nie jest pobierany.
+    #The service builds its own image from Debian; no ready-made MariaDB image is pulled.
     build:
       context: ./requirements/mariadb
       dockerfile: Dockerfile
@@ -36,8 +34,7 @@ services:
     stop_grace_period: 30s
 
   wordpress:
-    # [EN] This image contains WordPress and PHP-FPM only; it does not install NGINX.
-    # [PL] Ten obraz zawiera wyłącznie WordPress i PHP-FPM; nie instaluje NGINX-a.
+    #This image contains WordPress and PHP-FPM only; it does not install NGINX.
     build:
       context: ./requirements/wordpress
       dockerfile: Dockerfile
@@ -72,8 +69,7 @@ services:
     stop_grace_period: 30s
 
   nginx:
-    # [EN] NGINX is the only public entry point and the only service publishing a host port.
-    # [PL] NGINX jest jedynym publicznym wejściem i jedyną usługą publikującą port hosta.
+    #NGINX is the only public entry point and the only service publishing a host port.
     build:
       context: ./requirements/nginx
       dockerfile: Dockerfile
@@ -85,8 +81,7 @@ services:
     ports:
       - "443:443"
     volumes:
-      # [EN] NGINX needs WordPress files for static content, but it never writes to them.
-      # [PL] NGINX potrzebuje plików WordPressa dla treści statycznych, ale nigdy ich nie zapisuje.
+      #NGINX needs WordPress files for static content, but it never writes to them.
       - type: volume
         source: wordpress_data
         target: /var/www/html
@@ -112,15 +107,13 @@ services:
       - no-new-privileges:true
     stop_grace_period: 10s
 
-# [EN] A user-defined bridge network provides isolation and service-name DNS.
-# [PL] Własna sieć bridge zapewnia izolację i DNS oparty na nazwach usług.
+#A user-defined bridge network provides isolation and service-name DNS.
 networks:
   inception:
     name: inception
     driver: bridge
 
-# [EN] These are Docker named volumes. The local driver places their data in the required host paths.
-# [PL] To są nazwane wolumeny Dockera. Sterownik local umieszcza dane w wymaganych ścieżkach hosta.
+#These are Docker named volumes. The local driver places their data in the required host paths.
 volumes:
   mariadb_data:
     name: mariadb_data
@@ -137,8 +130,7 @@ volumes:
       o: bind
       device: /home/${LOGIN}/data/wordpress
 
-# [EN] Compose mounts each secret as a read-only file under /run/secrets in authorized services.
-# [PL] Compose montuje każdy sekret jako plik tylko do odczytu w /run/secrets uprawnionych usług.
+#Compose mounts each secret as a read-only file under /run/secrets in authorized services.
 secrets:
   db_root_password:
     file: ../secrets/db_root_password.txt
