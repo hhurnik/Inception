@@ -7,7 +7,7 @@ services:
     build:
       context: ./requirements/mariadb
       dockerfile: Dockerfile
-    image: inception-mariadb:1.0
+    image: mariadb:1.0
     container_name: mariadb
     restart: unless-stopped
     env_file:
@@ -38,7 +38,7 @@ services:
     build:
       context: ./requirements/wordpress
       dockerfile: Dockerfile
-    image: inception-wordpress:1.0
+    image: wordpress:1.0
     container_name: wordpress
     restart: unless-stopped
     env_file:
@@ -73,7 +73,7 @@ services:
     build:
       context: ./requirements/nginx
       dockerfile: Dockerfile
-    image: inception-nginx:1.0
+    image: nginx:1.0
     container_name: nginx
     restart: unless-stopped
     env_file:
